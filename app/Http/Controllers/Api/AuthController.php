@@ -32,7 +32,7 @@ class AuthController extends Controller
             'name' => $request->string('name')->toString(),
             'email' => $request->string('email')->toString(),
             'password' => $request->string('password')->toString(),
-            'role' => UserRole::Viewer,
+            'role' => UserRole::from($request->input('role', UserRole::Viewer->value)),
         ])->save();
 
         $issued = $this->tokens->issue(

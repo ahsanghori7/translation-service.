@@ -101,7 +101,7 @@ php artisan translations:benchmark --assert
 
 Search query parameters: `key`, `key_mode` (`prefix`, `contains`, `exact`), `content`, `locale`, `tags`, `tag_mode` (`any`, `all`), `group`, `per_page` (max 100), `cursor`. Results are cursor-paginated, newest first, with no total count: follow `meta.next_cursor` or `links.next` (which keeps the filters).
 
-**Roles.** `editor` can read and write; `viewer` is read-only and gets `403` on every POST/PUT/PATCH/DELETE. Self-registration always creates viewers, and `role` is not mass-assignable, so it cannot be set from a request. The seeded admin is an editor; the migration that added roles made every existing account an editor.
+**Roles.** `editor` can read and write; `viewer` is read-only and gets `403` on every POST/PUT/PATCH/DELETE. Registration accepts an optional `role` of `viewer` or `editor`. Omitting it creates a viewer. `role` is not mass-assignable on the user model. The seeded admin is an editor; the migration that added roles made every existing account an editor.
 
 Export query parameters: `tags`, `tag_mode`, `structure` (`flat` or `nested`). Send `If-None-Match` to receive `304` when the revision has not changed.
 
@@ -166,7 +166,7 @@ Locally you need the PCOV or Xdebug extension (`xdebug.mode=coverage`).
 
 **Search.** Prefix key search is the default because `LIKE 'term%'` can use the unique key index. Contains and content search escape `%`, `_`, and `\` and pass an explicit `ESCAPE` clause so SQLite and MySQL treat them the same. Page size is capped at 100. Unknown locales or tags return an empty page instead of the full table.
 
-**Auth.** Tokens are 32 random bytes, shown once, and stored only as SHA-256. Expired tokens are rejected. `last_used_at` is written at most every five minutes so read traffic does not update the token row on every call. Login always runs one hash check, even for unknown emails, so timing does not reveal which accounts exist. Self-registration always creates a viewer. Writes need the `editor` role (see Roles above).
+**Auth.** Tokens are 32 random bytes, shown once, and stored only as SHA-256. Expired tokens are rejected. `last_used_at` is written at most every five minutes so read traffic does not update the token row on every call. Login always runs one hash check, even for unknown emails, so timing does not reveal which accounts exist. Registration can create a viewer or an editor. Writes need the `editor` role (see Roles above).
 
 **CDN.** Export responses send `Cache-Control: public, max-age=0, must-revalidate` unless `CDN_TTL` is set, plus `ETag`, `CDN-Cache-Control`, `Cache-Tag`, and `Surrogate-Key`. A CDN may store the body, but it must revalidate. The ETag changes when the revision changes, so clients do not keep a stale catalog. Set `CDN_URL` to include a `cdn_url` in the JSON. Set `CDN_ENABLED=true` with `CLOUDFLARE_ZONE_ID` and `CLOUDFLARE_API_TOKEN` to purge the `translations` cache tag after a write. Other management responses use `Cache-Control: no-store`. With `EXPORT_REQUIRES_AUTH=true` the export switches to `Cache-Control: private, max-age=0, must-revalidate`, `CDN-Cache-Control: no-store` and `Vary: Authorization` (no cache tags, no `cdn_url`), so a shared cache never stores a token-protected catalog and serves it to anonymous callers.
 

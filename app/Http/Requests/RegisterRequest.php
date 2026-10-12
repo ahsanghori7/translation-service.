@@ -23,6 +23,7 @@ class RegisterRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
             'device_name' => ['sometimes', 'string', 'max:100'],
+            'role' => ['sometimes', 'string', 'in:viewer,editor'],
         ];
     }
 

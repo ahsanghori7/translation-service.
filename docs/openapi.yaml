@@ -22,8 +22,7 @@ paths:
       tags: [Auth]
       summary: Register and receive a bearer token
       description: >
-        Self-registered accounts always get the read-only viewer role;
-        editors are provisioned by an operator.
+        Optional role is viewer or editor. Omitted role creates a viewer.
       requestBody:
         required: true
         content:
@@ -411,6 +410,10 @@ components:
           type: string
         device_name:
           type: string
+        role:
+          type: string
+          enum: [viewer, editor]
+          default: viewer
     LoginRequest:
       type: object
       required: [email, password]

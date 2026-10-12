@@ -64,7 +64,7 @@ class AuthorizationTest extends ApiTestCase
         ], $editor)->assertCreated();
     }
 
-    public function test_role_cannot_be_self_assigned_and_existing_users_keep_write_access(): void
+    public function test_registration_can_choose_editor_and_rejects_unknown_roles(): void
     {
         $this->postJson('/api/auth/register', [
             'name' => 'Mallory',
@@ -72,9 +72,17 @@ class AuthorizationTest extends ApiTestCase
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'role' => 'editor',
-        ])->assertCreated()->assertJsonPath('user.role', 'viewer');
+        ])->assertCreated()->assertJsonPath('user.role', 'editor');
 
-        $this->assertSame(UserRole::Viewer, User::query()->where('email', 'mallory@example.com')->first()?->role);
+        $this->assertSame(UserRole::Editor, User::query()->where('email', 'mallory@example.com')->first()?->role);
+
+        $this->postJson('/api/auth/register', [
+            'name' => 'Ada',
+            'email' => 'ada@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role' => 'admin',
+        ])->assertUnprocessable();
 
         $this->seed();
         $this->assertSame(UserRole::Editor, User::query()->where('email', 'admin@example.com')->first()?->role);
