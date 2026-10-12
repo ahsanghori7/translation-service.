@@ -1,0 +1,56 @@
+services:
+    app:
+        build: .
+        environment:
+            APP_ENV: local
+            APP_DEBUG: "false"
+            DB_CONNECTION: mysql
+            DB_HOST: mysql
+            DB_PORT: 3306
+            DB_DATABASE: translations
+            DB_USERNAME: translations
+            DB_PASSWORD: secret
+            CACHE_STORE: redis
+            REDIS_CLIENT: phpredis
+            REDIS_HOST: redis
+            QUEUE_CONNECTION: sync
+            SEED_DATABASE: "true"
+            SESSION_DRIVER: file
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_started
+
+    nginx:
+        image: nginx:1.27-alpine
+        ports:
+            - "8080:80"
+        volumes:
+            - .:/var/www
+            - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+        depends_on:
+            - app
+
+    mysql:
+        image: mysql:8.4
+        environment:
+            MYSQL_DATABASE: translations
+            MYSQL_USER: translations
+            MYSQL_PASSWORD: secret
+            MYSQL_ROOT_PASSWORD: rootsecret
+        ports:
+            - "3307:3306"
+        command:
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_unicode_ci
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootsecret"]
+            interval: 5s
+            timeout: 5s
+            retries: 20
+
+    redis:
+        image: redis:7-alpine
+        ports:
+            - "6379:6379"

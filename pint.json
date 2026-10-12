@@ -1,0 +1,12 @@
+{
+    "preset": "psr12",
+    "rules": {
+        "declare_strict_types": true,
+        "new_with_parentheses": true,
+        "no_unused_imports": true,
+        "ordered_imports": {
+            "sort_algorithm": "alpha"
+        },
+        "single_quote": true
+    }
+}
